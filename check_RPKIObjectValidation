@@ -1,0 +1,36 @@
+#!/bin/bash
+
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
+
+nopasaron=`curl -s http://ripeval.labs.lacnic.net:8080/trust-anchor-monitor/aa4375000f | grep 'Objects that did not pass validation' | awk -F '[>]' '{print $6}' | awk -F '[<]' '{print $1}'`
+
+
+if [[ $nopasaron -ne 0 ]]
+then
+	echo "$nopasaron objetos no pasaron la validacion"
+	echo $STATE_CRITICAL
+	exit $STATE_CRITICAL
+fi
+
+advertencias=`curl -s http://ripeval.labs.lacnic.net:8080/trust-anchor-monitor/aa4375000f | grep 'Objects that passed validation with warnings' | awk -F '[>]' '{print $6}' | awk -F '[<]' '{print $1}'`
+
+if [[ $advertencias -ne 0 ]]
+then
+        echo "$advertencias objetos pasaron la validacion con advertencias"
+        echo $STATE_WARNING
+        exit $STATE_WARNING
+fi
+
+if [ $nopasaron -eq 0 ] && [ $advertencias -eq 0 ]
+then
+	echo "Todos los objetos pasaron la validacion"
+	echo $STATE_OK
+	exit $STATE_OK
+fi
+
+echo $STATE_UNKNOWN
+exit $STATE_UNKNOWN

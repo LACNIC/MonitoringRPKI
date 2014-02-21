@@ -1,0 +1,55 @@
+#! /bin/bash
+
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
+TIMEFORMAT=%R
+
+repoSrv=$1
+version=$2
+thrshW=$3
+thrshC=$4
+
+SRC="rsync://$repoSrv/rpki/lacnic"
+DST="/tmp/rpki_rep"
+
+command="rsync -r$version $SRC $DST > /dev/null; sync;"
+
+rm -Rf $DST
+mkdir $DST
+
+sync                               
+echo 3 > /proc/sys/vm/drop_caches  
+
+exec 3>&1 4>&2
+TIME=`{ time sh -c "$command" 1>&3 2>&4; } 2>&1`
+exec 3>&- 4>&-
+
+rm -Rf $DST
+
+echo "El rsync por IPv$version al repositorio de RPKI de LACNIC en $repoSrv demoro $TIME segundos"
+
+if (( $(echo "$TIME <= $thrshW" | bc -l) )) 
+then
+        echo $STATE_OK
+        exit $STATE_OK
+fi
+
+
+if (( $(echo "$TIME > $thrshC" | bc -l) ))
+then
+        echo $STATE_CRITICAL
+        exit $STATE_CRITICAL
+fi
+
+
+if (( $(echo "$TIME > $thrshW" | bc -l) ))
+then
+        echo $STATE_WARNING
+        exit $STATE_WARNING
+fi
+
+echo $STATE_UNKNOWN
+exit $STATE_UNKNOWN

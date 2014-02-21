@@ -1,0 +1,28 @@
+#!/bin/bash
+
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
+
+state=`curl -s http://ripeval.labs.lacnic.net:8080/trust-anchor-monitor/aa4375000f | grep healthcheck | awk -F '[>]' '{print $6}' | awk -F '[<]' '{print $1}'`
+
+
+if [[ "$state" == *OK* ]]
+then
+	echo "El healthcheck del repositorio RPKI dio OK"
+	echo $STATE_OK
+	exit $STATE_OK
+fi
+
+if [[ "$state" == *ALERT* ]]
+then
+        echo "El healthcheck del repositorio RPKI dio ALERT"
+        echo $STATE_CRITICAL
+        exit $STATE_CRITICAL
+fi
+
+echo "No se reconoce el resultado del healthcheck del repositorio de RPKI"
+echo $STATE_UNKNOWN
+exit $STATE_UNKNOWN
