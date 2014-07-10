@@ -7,14 +7,14 @@ STATE_UNKNOWN=3
 
 TIMEFORMAT=%R
 
-repoSrv=$1
+SRC=$1
 version=$2
 thrshW=$3
 thrshC=$4
+RIR=$5
 
 ahora=`date +%s`
-SRC="rsync://$repoSrv/rpki/lacnic"
-DST="/tmp/rpki_rep_$repoSrv_$version_$ahora"
+DST="/tmp/rpki_rep$RIR$version$ahora$RANDOM"
 
 command="rsync -r$version $SRC $DST > /dev/null;"
 
@@ -27,7 +27,7 @@ exec 3>&- 4>&-
 
 rm -Rf $DST
 
-echo "El rsync por IPv$version al repositorio de RPKI de LACNIC en $repoSrv demoro $TIME segundos"
+echo "El rsync por IPv$version al repositorio de RPKI de $RIR en $repoSrv demoro $TIME segundos"
 
 if (( $(echo "$TIME <= $thrshW" | bc -l) )) 
 then

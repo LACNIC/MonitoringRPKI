@@ -5,8 +5,10 @@ STATE_WARNING=1
 STATE_CRITICAL=2
 STATE_UNKNOWN=3
 
+RTAid=$1
+RIR=$2
 
-nopasaron=`curl -s http://ripeval.labs.lacnic.net:8080/trust-anchor-monitor/aa4375000f | grep 'Objects that did not pass validation' | awk -F '[>]' '{print $6}' | awk -F '[<]' '{print $1}'`
+nopasaron=`curl -s http://ripeval.labs.lacnic.net:8080/trust-anchor-monitor/$RTAid | grep 'Objects that did not pass validation' | awk -F '[>]' '{print $6}' | awk -F '[<]' '{print $1}'`
 
 
 if [[ $nopasaron -ne 0 ]]
@@ -16,7 +18,7 @@ then
 	exit $STATE_CRITICAL
 fi
 
-advertencias=`curl -s http://ripeval.labs.lacnic.net:8080/trust-anchor-monitor/aa4375000f | grep 'Objects that passed validation with warnings' | awk -F '[>]' '{print $6}' | awk -F '[<]' '{print $1}'`
+advertencias=`curl -s http://ripeval.labs.lacnic.net:8080/trust-anchor-monitor/$RTAid | grep 'Objects that passed validation with warnings' | awk -F '[>]' '{print $6}' | awk -F '[<]' '{print $1}'`
 
 if [[ $advertencias -ne 0 ]]
 then
@@ -27,7 +29,7 @@ fi
 
 if [ $nopasaron -eq 0 ] && [ $advertencias -eq 0 ]
 then
-	echo "Todos los objetos pasaron la validacion"
+	echo "Todos los objetos del repositorio de $RIR pasaron la validacion"
 	echo $STATE_OK
 	exit $STATE_OK
 fi
