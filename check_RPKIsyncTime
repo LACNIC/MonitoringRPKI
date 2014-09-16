@@ -16,7 +16,7 @@ RIR=$5
 ahora=`date +%s`
 DST="/tmp/rpki_rep$RIR$version$ahora$RANDOM"
 
-command="rsync -r$version $SRC $DST > /dev/null;"
+command="rsync --timeout=190 -r$version $SRC $DST > /dev/null;"
 
 rm -Rf $DST
 mkdir $DST
@@ -25,11 +25,11 @@ exec 3>&1 4>&2
 TIME=`{ time sh -c "$command" 1>&3 2>&4; } 2>&1`
 exec 3>&- 4>&-
 
-trap "{ rm -Rf $DST ; exit 2; }" SIGINT SIGTERM
+trap "{ rm -Rf $DST ; exit 2 ; }" SIGINT SIGTERM
 
 rm -Rf $DST
 
-echo "El rsync por IPv$version al repositorio de RPKI de $RIR en $repoSrv demoro $TIME segundos"
+echo "El rsync por IPv$version al repositorio de RPKI de $RIR en $SRC demoro $TIME segundos"
 
 if (( $(echo "$TIME <= $thrshW" | bc -l) )) 
 then
