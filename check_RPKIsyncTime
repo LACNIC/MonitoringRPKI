@@ -16,7 +16,7 @@ RIR=$5
 ahora=`date +%s`
 DST="/tmp/rpki_rep$RIR$version$ahora$RANDOM"
 
-command="rsync --timeout=190 -r$version $SRC $DST > /dev/null;"
+command="rsync --contimeout=190 -r$version $SRC $DST > /dev/null;"
 
 rm -Rf $DST
 mkdir $DST
